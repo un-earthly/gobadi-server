@@ -9,7 +9,7 @@ const generateToken = (id, role) => {
 };
 
 const registerUser = async (req, res) => {
-	const { mobile, role } = req.body;
+	const { mobile, role, hash, murgi, goru, chagol } = req.body;
 
 	try {
 		const userExists = await User.findOne({ mobile });
@@ -24,6 +24,10 @@ const registerUser = async (req, res) => {
 			mobile,
 			password,
 			role,
+			hash,
+			murgi,
+			goru,
+			chagol,
 		});
 
 		if (user) {
@@ -31,6 +35,10 @@ const registerUser = async (req, res) => {
 				_id: user._id,
 				mobile: user.mobile,
 				role: user.role,
+				hash: user.hash || null,
+				murgi: user.murgi || null,
+				goru: user.goru || null,
+				chagol: user.chagol || null,
 				token: generateToken(user._id, user.role),
 			});
 		} else {

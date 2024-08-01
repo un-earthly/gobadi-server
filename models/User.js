@@ -18,6 +18,26 @@ const userSchema = new mongoose.Schema({
 		enum: ['data', 'grohita'],
 		default: 'grohita',
 	},
+	hash: {
+		type: Number,
+		required: true,
+		default: null,
+	},
+	murgi: {
+		type: Number,
+		required: true,
+		default: null,
+	},
+	goru: {
+		type: Number,
+		required: true,
+		default: null,
+	},
+	chagol: {
+		type: Number,
+		required: true,
+		default: null,
+	},
 });
 
 userSchema.pre('save', async function (next) {
