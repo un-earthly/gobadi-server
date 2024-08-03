@@ -15,27 +15,32 @@ const userSchema = new mongoose.Schema({
 	role: {
 		type: String,
 		required: true,
-		enum: ['data', 'grohita'],
-		default: 'grohita',
+		enum: ['provider', 'consumer'],
+		default: 'consumer',
 	},
-	hash: {
+	duck: {
 		type: Number,
-		required: true,
+		required: false,
 		default: null,
 	},
-	murgi: {
+	hen: {
 		type: Number,
-		required: true,
+		required: false,
 		default: null,
 	},
-	goru: {
+	cow: {
 		type: Number,
-		required: true,
+		required: false,
 		default: null,
 	},
-	chagol: {
+	goat: {
 		type: Number,
-		required: true,
+		required: false,
+		default: null,
+	},
+	fish: {
+		type: Number,
+		required: false,
 		default: null,
 	},
 });

@@ -1,7 +1,7 @@
 // controllers/authController.js
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
-
+import bcrypt from 'bcryptjs';
 const generateToken = (id, role) => {
 	return jwt.sign({ id, role }, process.env.JWT_SECRET, {
 		expiresIn: '30d',
@@ -9,7 +9,16 @@ const generateToken = (id, role) => {
 };
 
 const registerUser = async (req, res) => {
-	const { mobile, role, hash, murgi, goru, chagol } = req.body;
+	const { mobile, role, veterinaries } = req.body;
+	let cow, fish, goat, hen, duck;
+
+	if (role === "provider" && veterinaries) {
+		cow = veterinaries.cow;
+		fish = veterinaries.fish;
+		goat = veterinaries.goat;
+		hen = veterinaries.hen;
+		duck = veterinaries.duck;
+	}
 
 	try {
 		const userExists = await User.findOne({ mobile });
@@ -19,15 +28,17 @@ const registerUser = async (req, res) => {
 		}
 
 		const password = Math.floor(100000 + Math.random() * 900000).toString();
+		const hashedPassword = await bcrypt.hash(password, 10);
 
 		const user = await User.create({
 			mobile,
-			password,
+			password: hashedPassword,
 			role,
-			hash,
-			murgi,
-			goru,
-			chagol,
+			cow,
+			fish,
+			goat,
+			hen,
+			duck,
 		});
 
 		if (user) {
@@ -35,16 +46,20 @@ const registerUser = async (req, res) => {
 				_id: user._id,
 				mobile: user.mobile,
 				role: user.role,
-				hash: user.hash || null,
-				murgi: user.murgi || null,
-				goru: user.goru || null,
-				chagol: user.chagol || null,
+				veterinaries: {
+					cow: user.cow || null,
+					fish: user.fish || null,
+					goat: user.goat || null,
+					hen: user.hen || null,
+					duck: user.duck || null
+				},
 				token: generateToken(user._id, user.role),
 			});
 		} else {
 			res.status(400).json({ message: 'Invalid user data' });
 		}
 	} catch (error) {
+		console.error(error);
 		res.status(500).json({ message: 'Server error' });
 	}
 };
