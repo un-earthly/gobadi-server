@@ -1,7 +1,6 @@
 // controllers/authController.js
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
 const generateToken = (id, role) => {
 	return jwt.sign({ id, role }, process.env.JWT_SECRET, {
 		expiresIn: '30d',
@@ -12,7 +11,7 @@ const registerUser = async (req, res) => {
 	const { mobile, role, veterinaries } = req.body;
 	let cow, fish, goat, hen, duck;
 
-	if (role === "provider" && veterinaries) {
+	if (role === "consumer" && veterinaries) {
 		cow = veterinaries.cow;
 		fish = veterinaries.fish;
 		goat = veterinaries.goat;
@@ -28,11 +27,10 @@ const registerUser = async (req, res) => {
 		}
 
 		const password = Math.floor(100000 + Math.random() * 900000).toString();
-		const hashedPassword = await bcrypt.hash(password, 10);
 
 		const user = await User.create({
 			mobile,
-			password: hashedPassword,
+			password,
 			role,
 			cow,
 			fish,
