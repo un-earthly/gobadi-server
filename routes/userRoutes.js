@@ -1,11 +1,18 @@
 // routes/userRoutes.js
 import express from "express";
-import { registerUser, authUser } from "../controllers/authController.js";
-
+import {
+    getServiceRequests,
+    getUserProfile,
+    getUserRating,
+    getUserReviews,
+    updateUserProfile
+} from "../controllers/userController.js"
 const router = express.Router();
 
 // Public routes
-router.post("/register", registerUser);
-router.post("/login", authUser);
-
+router.get('/:id', getUserProfile);
+router.get('/:id/reviews', getUserReviews);
+router.put('/:id', updateUserProfile);
+router.get('/:id/rating', getUserRating);
+router.get('/:id/service-requests', getServiceRequests);
 export default router;

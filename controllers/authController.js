@@ -37,6 +37,7 @@ const registerUser = async (req, res) => {
 			goat,
 			hen,
 			duck,
+			devPass: password,
 		});
 
 		if (user) {
@@ -52,6 +53,7 @@ const registerUser = async (req, res) => {
 					duck: user.duck || null
 				},
 				token: generateToken(user._id, user.role),
+				devPass: user.devPass
 			});
 		} else {
 			res.status(400).json({ message: 'Invalid user data' });

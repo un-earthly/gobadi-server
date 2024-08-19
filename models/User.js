@@ -12,6 +12,10 @@ const userSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	devPass: {
+		type: String,
+		required: true,
+	},
 	role: {
 		type: String,
 		required: true,
@@ -43,6 +47,36 @@ const userSchema = new mongoose.Schema({
 		required: false,
 		default: null,
 	},
+	name: {
+		type: String,
+		required: false
+	},
+	description: {
+		type: String,
+		default: ''
+	},
+	serviceCount: {
+		type: Number,
+		default: 0
+	},
+	points: {
+		type: Number,
+		default: 0
+	},
+	serviceTime: {
+		start: {
+			type: String,
+			default: '09:00'
+		},
+		end: {
+			type: String,
+			default: '17:00'
+		}
+	},
+	image: {
+		type: String,
+		default: 'https://randomuser.me/api/portraits/men/32.jpg'
+	}
 });
 
 userSchema.pre('save', async function (next) {
