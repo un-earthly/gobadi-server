@@ -1,6 +1,5 @@
 // services/menuService.js
 import MenuItem from '../models/MenuItem.js';
-import Category from '../models/Category.js';
 
 export const getMenuItems = async () => {
     return await MenuItem.find().select('-categories');

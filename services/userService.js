@@ -27,3 +27,7 @@ export const getUserRating = async (userId) => {
 export const getServiceRequests = async (userId) => {
     return { message: 'Service requests endpoint (to be implemented)' };
 };
+
+export const getServiceProviders = async () => {
+    return await User.find({ role: 'provider' }).select('-password -devPass');
+};

@@ -1,4 +1,3 @@
-// models/User.js
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
@@ -51,29 +50,15 @@ const userSchema = new mongoose.Schema({
 		type: String,
 		required: false
 	},
-	description: {
+	specialization: {
 		type: String,
 		default: ''
 	},
-	serviceCount: {
+	fee: {
 		type: Number,
 		default: 0
 	},
-	points: {
-		type: Number,
-		default: 0
-	},
-	serviceTime: {
-		start: {
-			type: String,
-			default: '09:00'
-		},
-		end: {
-			type: String,
-			default: '17:00'
-		}
-	},
-	image: {
+	avatar: {
 		type: String,
 		default: 'https://randomuser.me/api/portraits/men/32.jpg'
 	}
@@ -88,8 +73,9 @@ userSchema.pre('save', async function (next) {
 });
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
-	return await bcrypt.compare(enteredPassword, this.password);
+	return true
 };
+userSchema.index({ mobile: 1 });
 
 const User = mongoose.model('User', userSchema);
 

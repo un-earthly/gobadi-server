@@ -5,6 +5,9 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import menuRoutes from './routes/menuRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import appointmentRoutes from './routes/appointmentRoutes.js';
+import roomRoutes from './routes/roomRoutes.js';
+
 
 dotenv.config();
 connectDB();
@@ -16,6 +19,8 @@ app.use(cors());
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/menu', menuRoutes);
+app.use('/api/rooms', roomRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

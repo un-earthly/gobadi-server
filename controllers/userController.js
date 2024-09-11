@@ -22,8 +22,7 @@ export const getUserReviews = async (req, res) => {
 
 export const updateUserProfile = async (req, res) => {
     try {
-        const { name, description, serviceTime } = req.body;
-        const user = await userService.updateUser(req.params.id, { name, description, serviceTime });
+        const user = await userService.updateUser(req.params.id, req.body);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -47,6 +46,16 @@ export const getServiceRequests = async (req, res) => {
         const serviceRequests = await userService.getServiceRequests(req.params.id);
         res.json(serviceRequests);
     } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const getUserServiceProviders = async (req, res) => {
+    try {
+        const serviceRequests = await userService.getServiceProviders();
+        res.json(serviceRequests);
+    } catch (error) {
+        console.log(error);
         res.status(500).json({ message: 'Server error' });
     }
 };
