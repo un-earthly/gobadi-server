@@ -1,3 +1,4 @@
+import admin from '../firebase.js';
 import Appointment from '../models/Appointment.js';
 import User from '../models/User.js';
 
@@ -12,7 +13,7 @@ export async function createAppointmentService(appointmentData) {
         // Initialize chat in Firestore
         await admin.firestore().collection('chats').doc(savedAppointment._id.toString()).set({
             appointmentId: savedAppointment._id.toString(),
-            participantIds: [appointmentData.provider, appointmentData.consumer, appointmentData._id],
+            // participantIds: [appointmentData.provider, appointmentData.consumer, appointmentData._id],
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
@@ -25,35 +26,35 @@ export async function createAppointmentService(appointmentData) {
 
 
 
-export async function updateFirebaseCustomClaims(userId, appointmentId) {
-    try {
-        // Fetch the user's Firebase UID from your User model
-        const user = await User.findById(userId);
-        if (!user || !user.firebaseUid) {
-            throw new Error(`User ${userId} not found or has no Firebase UID`);
-        }
+// export async function updateFirebaseCustomClaims(userId, appointmentId) {
+//     try {
+//         // Fetch the user's Firebase UID from your User model
+//         const user = await User.findById(userId);
+//         if (!user) {
+//             throw new Error(`User ${userId} not found or has no Firebase UID`);
+//         }
 
-        // Get the user's current custom claims
-        const { customClaims } = await admin.auth().getUser(user.firebaseUid);
+//         // Get the user's current custom claims
+//         // const { customClaims } = await admin.auth().getUser(user.firebaseUid);
 
-        // Update the appointments claim
-        const updatedClaims = {
-            ...customClaims,
-            appointments: {
-                ...(customClaims?.appointments || {}),
-                [appointmentId.toString()]: true
-            }
-        };
+//         // Update the appointments claim
+//         const updatedClaims = {
+//             ...customClaims,
+//             appointments: {
+//                 ...(customClaims?.appointments || {}),
+//                 [appointmentId.toString()]: true
+//             }
+//         };
 
-        // Set the updated custom claims
-        await admin.auth().setCustomUserClaims(user.firebaseUid, updatedClaims);
-        console.log(`Updated Firebase custom claims for user ${userId} with appointment ${appointmentId}`);
-    } catch (error) {
-        console.error(`Error updating Firebase custom claims for user ${userId}:`, error);
-        // You might want to handle this error based on your application's needs
-        // For now, we'll just log it and not throw, to prevent the appointment creation from failing
-    }
-}
+//         // Set the updated custom claims
+//         await admin.auth().setCustomUserClaims(user.firebaseUid, updatedClaims);
+//         console.log(`Updated Firebase custom claims for user ${userId} with appointment ${appointmentId}`);
+//     } catch (error) {
+//         console.error(`Error updating Firebase custom claims for user ${userId}:`, error);
+//         // You might want to handle this error based on your application's needs
+//         // For now, we'll just log it and not throw, to prevent the appointment creation from failing
+//     }
+// }
 // Get all appointments
 export async function getAppointmentsService() {
     return await Appointment.find()
