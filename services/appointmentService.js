@@ -1,4 +1,4 @@
-import { getFirestore } from 'firebase-admin/firestore';
+import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import admin from '../firebase.js';
 import Appointment from '../models/Appointment.js';
 import User from '../models/User.js';
@@ -17,7 +17,7 @@ export async function createAppointmentService(appointmentData) {
         await firestore.collection('chats').doc(savedAppointment._id.toString()).set({
             appointmentId: savedAppointment._id.toString(),
             // participantIds: [appointmentData.provider, appointmentData.consumer, appointmentData._id],
-            createdAt: firestore.FieldValue.serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
         });
 
         return savedAppointment;
