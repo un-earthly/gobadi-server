@@ -1,3 +1,4 @@
+import { getFirestore } from 'firebase-admin/firestore';
 import admin from '../firebase.js';
 import Appointment from '../models/Appointment.js';
 import User from '../models/User.js';
@@ -7,14 +8,16 @@ import User from '../models/User.js';
 export async function createAppointmentService(appointmentData) {
     try {
         // Create appointment in your database (e.g., MongoDB)
+        const firestore = getFirestore(admin);
+
         const appointment = new Appointment(appointmentData);
         const savedAppointment = await appointment.save();
 
         // Initialize chat in Firestore
-        await admin.firestore().collection('chats').doc(savedAppointment._id.toString()).set({
+        await firestore.collection('chats').doc(savedAppointment._id.toString()).set({
             appointmentId: savedAppointment._id.toString(),
             // participantIds: [appointmentData.provider, appointmentData.consumer, appointmentData._id],
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            createdAt: firestore.FieldValue.serverTimestamp(),
         });
 
         return savedAppointment;

@@ -5,7 +5,7 @@ import data from './gobadi-3d7fb-firebase-adminsdk-bm88q-38ea9b9570.json' assert
 
 // Initialize the Firebase Admin SDK
 const admin = initializeApp({
-    credential: credential.cert(data), // Use firebaseAdmin.credential.cert
+    credential: credential.cert(data), 
     databaseURL: "https://gobadi-3d7fb-default-rtdb.firebaseio.com"
 });
 
