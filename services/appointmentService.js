@@ -1,5 +1,5 @@
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
-import admin from '../firebase.js';
+import { firestore } from '../firebase.js';
 import Appointment from '../models/Appointment.js';
 import User from '../models/User.js';
 
@@ -7,8 +7,6 @@ import User from '../models/User.js';
 
 export async function createAppointmentService(appointmentData) {
     try {
-        // Create appointment in your database (e.g., MongoDB)
-        const firestore = getFirestore(admin);
 
         const appointment = new Appointment(appointmentData);
         const savedAppointment = await appointment.save();
