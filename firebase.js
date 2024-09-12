@@ -13,4 +13,4 @@ const app = initializeApp({
 // Initialize Firestore
 const firestore = getFirestore(app);
 
-export default { app, firestore };
+export { app, firestore };
