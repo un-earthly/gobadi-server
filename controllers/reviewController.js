@@ -58,6 +58,25 @@ class ReviewController {
             res.status(400).json({ message: error.message });
         }
     }
+    async getAverageRating(req, res) {
+        try {
+            const providerId = req.params.providerId;
+            const averageRating = await ReviewService.getAverageRatingForProvider(providerId);
+            res.json({ averageRating });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
+    async getProviderPoints(req, res) {
+        try {
+            const providerId = req.params.providerId;
+            const points = await ReviewService.calculatePointsForProvider(providerId);
+            res.json({ points });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
 }
 
 export default new ReviewController();

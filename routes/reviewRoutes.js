@@ -9,5 +9,6 @@ router.get('/:id', ReviewController.getReviewById);
 router.post('/', ReviewController.createReview);
 router.put('/:id', ReviewController.updateReview);
 router.patch('/:id', ReviewController.partialUpdateReview);
-
+router.get('/average-rating/:providerId', ReviewController.getAverageRating);
+router.get('/points/:providerId', ReviewController.getProviderPoints);
 export default router;

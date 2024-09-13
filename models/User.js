@@ -61,6 +61,10 @@ const userSchema = new mongoose.Schema({
 	avatar: {
 		type: String,
 		default: 'https://randomuser.me/api/portraits/men/32.jpg'
+	},
+	bio: {
+		type: String,
+		default: null
 	}
 });
 
