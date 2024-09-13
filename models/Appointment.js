@@ -60,25 +60,25 @@ const appointmentSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-appointmentSchema.pre('find', async function () {
-    await updateAppointmentStatus(this);
-});
+// appointmentSchema.pre('find', async function () {
+//     await updateAppointmentStatus(this);
+// });
 
-appointmentSchema.pre('findOne', async function () {
-    await updateAppointmentStatus(this);
-});
+// appointmentSchema.pre('findOne', async function () {
+//     await updateAppointmentStatus(this);
+// });
 
 
-async function updateAppointmentStatus(query) {
-    const now = new Date();
-    const appointments = await query.model.find(query.getQuery());
+// async function updateAppointmentStatus(query) {
+//     const now = new Date();
+//     const appointments = await query.model.find(query.getQuery());
 
-    for (const appointment of appointments) {
-        if (appointment.appointmentSchedule && appointment.appointmentSchedule <= now && appointment.status === "scheduled") {
-            appointment.status = "completed";
-            await appointment.save();
-        }
-    }
-}
+//     for (const appointment of appointments) {
+//         if (appointment.appointmentSchedule && appointment.appointmentSchedule <= now && appointment.status === "scheduled") {
+//             appointment.status = "completed";
+//             await appointment.save();
+//         }
+//     }
+// }
 const Appointment = mongoose.model('Appointment', appointmentSchema);
 export default Appointment;
