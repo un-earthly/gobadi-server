@@ -14,6 +14,6 @@ const FishCategorySchema = new mongoose.Schema({
     subCategories: [SubCategorySchema]
 });
 
-const FishCategory = mongoose.model('Category', FishCategorySchema);
+const Category = mongoose.model('Category', FishCategorySchema);
 
-export default FishCategory;
+export default Category;

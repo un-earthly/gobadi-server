@@ -4,8 +4,9 @@ import {
     getAppointmentByIdService,
     updateAppointmentService,
     deleteAppointmentService,
-    getAppointmentsForConsumerService,
-    getAppointmentsForProviderService
+    cancelAppointmentService,
+    countCompletedAppointmentsForProviderService,
+    countCompletedAppointmentsForConsumerService
 } from '../services/appointmentService.js';
 
 // Create a new appointment
@@ -67,22 +68,46 @@ export async function deleteAppointment(req, res) {
     }
 }
 
-// Get all appointments for a specific consumer
 export async function getAppointmentsForConsumer(req, res) {
     try {
-        const appointments = await getAppointmentsForConsumerService(req.params.consumerId);
+        const count = await countCompletedAppointmentsForConsumerService(req.params.consumerId);
+        res.status(200).json({ count });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+
+// Get all appointments for a specific provider
+export async function getAppointmentCountsForProvider(req, res) {
+    try {
+        const appointments = await countCompletedAppointmentsForProviderService(req.params.providerId);
         res.status(200).json(appointments);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 }
 
-// Get all appointments for a specific provider
-export async function getAppointmentsForProvider(req, res) {
+
+export const cancelAppointment = async (req, res) => {
+    const { id } = req.params;
+
     try {
-        const appointments = await getAppointmentsForProviderService(req.params.providerId);
-        res.status(200).json(appointments);
+        // Call the service function to handle the cancel logic
+        const updatedAppointment = await cancelAppointmentService(id);
+
+        return res.status(200).json({
+            message: 'Appointment canceled successfully',
+            appointment: updatedAppointment,
+        });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        // Handle errors from the service layer
+        if (error.message === 'Appointment not found') {
+            return res.status(404).json({ message: error.message });
+        } else if (error.message === 'Appointment cannot be canceled at this stage') {
+            return res.status(400).json({ message: error.message });
+        } else {
+            return res.status(500).json({ message: 'Error canceling appointment', error });
+        }
     }
-}
+};

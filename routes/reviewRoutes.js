@@ -1,0 +1,13 @@
+// routes/reviewRoutes.js
+import express from 'express';
+import ReviewController from '../controllers/reviewController.js';
+
+const router = express.Router();
+
+router.get('/', ReviewController.getAllReviews);
+router.get('/:id', ReviewController.getReviewById);
+router.post('/', ReviewController.createReview);
+router.put('/:id', ReviewController.updateReview);
+router.patch('/:id', ReviewController.partialUpdateReview);
+
+export default router;
