@@ -7,9 +7,18 @@ class ReviewService {
     async getAllReviews() {
         return await Review.find().populate('userId', 'name').populate('providerId', 'name');
     }
+    async getReviewsByProviderId(providerId) {
+        return await Review.find({ providerId: new Types.ObjectId(providerId) })
+            .populate('userId', 'name')  // Populate user details
+            .populate('providerId', 'name');  // Populate provider details (if needed)
+    }
 
-    async getReviewById(id) {
-        return await Review.findById(id).populate('userId', 'name').populate('providerId', 'name');
+    async getReviewByIdConsumerId(consumerId) {
+        return await Review.find({
+            userId: new Types.ObjectId(consumerId)
+        })
+            .populate('userId', 'name')
+            .populate('providerId', 'name');
     }
 
     async createReview(reviewData) {

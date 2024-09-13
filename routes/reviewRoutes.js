@@ -5,7 +5,8 @@ import ReviewController from '../controllers/reviewController.js';
 const router = express.Router();
 
 router.get('/', ReviewController.getAllReviews);
-router.get('/:id', ReviewController.getReviewById);
+router.get('/:id/provider', ReviewController.getReviewByIdProviderId);
+router.get('/:id/consumer', ReviewController.getReviewByIdConsumerId);
 router.post('/', ReviewController.createReview);
 router.put('/:id', ReviewController.updateReview);
 router.patch('/:id', ReviewController.partialUpdateReview);

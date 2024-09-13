@@ -11,9 +11,9 @@ class ReviewController {
         }
     }
 
-    async getReviewById(req, res) {
+    async getReviewByIdProviderId(req, res) {
         try {
-            const review = await ReviewService.getReviewById(req.params.id);
+            const review = await ReviewService.getReviewsByProviderId(req.params.id);
             if (review) {
                 res.json(review);
             } else {
@@ -77,6 +77,16 @@ class ReviewController {
             res.status(500).json({ message: error.message });
         }
     }
+    async getReviewByIdConsumerId(req, res) {
+        try {
+            const userId = req.params.id;
+            const review = await ReviewService.getReviewByIdConsumerId(userId);
+            res.json(review);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
 }
 
 export default new ReviewController();
