@@ -33,8 +33,15 @@ const appointmentSchema = new mongoose.Schema({
         required: true,
     },
     appointmentSchedule: {
-        type: Date,
-        required: false,
+        date: {
+            type: Date,
+            required: false,
+        },
+        slot: {
+            type: String,
+            required: false,
+
+        }
     },
     paymentMethod: {
         type: String,

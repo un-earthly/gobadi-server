@@ -11,17 +11,57 @@ const userSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
-	devPass: {
-		type: String,
-		required: true,
-	},
 	role: {
 		type: String,
 		required: true,
 		enum: ['provider', 'consumer'],
 		default: 'consumer',
 	},
-	duck: {
+	name: {
+		type: String,
+		required: false,
+	},
+	age: {
+		type: Number,
+		required: false,
+	},
+	district: {
+		type: String,
+		required: false,
+	},
+	avatar: {
+		type: String,
+		default: null,
+	},
+	nid: {
+		type: String,
+		required: false,
+	},
+	designation: {
+		type: String,
+		required: false,
+	},
+	organization: {
+		type: String,
+		required: false,
+	},
+	experience: {
+		type: Number,
+		required: false,
+	},
+	bio: {
+		type: String,
+		default: null,
+	},
+	specialization: {
+		type: String,
+		default: '',
+	},
+	availableTime: {
+		type: String,
+		required: false,
+	},
+	cow: {
 		type: Number,
 		required: false,
 		default: null,
@@ -31,7 +71,12 @@ const userSchema = new mongoose.Schema({
 		required: false,
 		default: null,
 	},
-	cow: {
+	fish: {
+		type: Number,
+		required: false,
+		default: null,
+	},
+	duck: {
 		type: Number,
 		required: false,
 		default: null,
@@ -41,44 +86,32 @@ const userSchema = new mongoose.Schema({
 		required: false,
 		default: null,
 	},
-	fish: {
-		type: Number,
-		required: false,
-		default: null,
-	},
-	name: {
-		type: String,
-		required: false
-	},
-	specialization: {
-		type: String,
-		default: ''
+	isOnline: {
+		type: Boolean,
+		default: false,
 	},
 	fee: {
 		type: Number,
-		default: 0
-	},
-	avatar: {
-		type: String,
-		default: 'https://randomuser.me/api/portraits/men/32.jpg'
-	},
-	bio: {
-		type: String,
-		default: null
+		required: false,
+		default: null,
 	}
 });
 
+// Hash password before saving
 userSchema.pre('save', async function (next) {
 	if (!this.isModified('password')) {
-		next();
+		return next();
 	}
 	const salt = await bcrypt.genSalt(10);
 	this.password = await bcrypt.hash(this.password, salt);
 });
 
+// Method to match passwords
 userSchema.methods.matchPassword = async function (enteredPassword) {
-	return true
+	return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// Index for mobile field
 userSchema.index({ mobile: 1 });
 
 const User = mongoose.model('User', userSchema);

@@ -6,7 +6,11 @@ import {
     deleteAppointmentService,
     cancelAppointmentService,
     countCompletedAppointmentsForProviderService,
-    countCompletedAppointmentsForConsumerService
+    countCompletedAppointmentsForConsumerService,
+    getAppointmentsForConsumerService,
+    getAppointmentsForProviderService,
+    getAppointmentsByDateService,
+    getAvailableSlotsForProviderService
 } from '../services/appointmentService.js';
 
 // Create a new appointment
@@ -68,7 +72,7 @@ export async function deleteAppointment(req, res) {
     }
 }
 
-export async function getAppointmentsForConsumer(req, res) {
+export async function getAppointmentsCountsForConsumer(req, res) {
     try {
         const count = await countCompletedAppointmentsForConsumerService(req.params.consumerId);
         res.status(200).json({ count });
@@ -111,3 +115,88 @@ export const cancelAppointment = async (req, res) => {
         }
     }
 };
+
+
+
+// Get all appointments for a specific consumer
+export async function getAppointmentsForConsumer(req, res) {
+    try {
+        const appointments = await getAppointmentsForConsumerService(req.params.consumerId);
+        res.status(200).json(appointments);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+// Get all appointments for a specific provider
+export async function getAppointmentsForProvider(req, res) {
+    try {
+        const appointments = await getAppointmentsForProviderService(req.params.providerId);
+        res.status(200).json(appointments);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+
+// Get appointments by date for a specific consumer
+export async function getAppointmentsByDateForConsumer(req, res) {
+    try {
+        const consumerId = req.params.consumerId;
+        let { date } = req.query;
+
+        // Default to today's date if no date is provided
+        if (!date) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Set time to 00:00:00
+            date = today;
+        } else {
+            date = new Date(date); // Convert the query string into a Date object
+        }
+
+        const appointments = await getAppointmentsByDateService(consumerId, 'consumer', date);
+        res.status(200).json(appointments);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+// Get appointments by date for a specific provider
+export async function getAppointmentsByDateForProvider(req, res) {
+    try {
+        const providerId = req.params.providerId;
+        let { date } = req.query;
+
+        // Default to today's date if no date is provided
+        if (!date) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Set time to 00:00:00
+            date = today;
+        } else {
+            date = new Date(date); // Convert the query string into a Date object
+        }
+
+        const appointments = await getAppointmentsByDateService(providerId, 'provider', date);
+        res.status(200).json(appointments);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+
+
+export async function getAvailableSlotsForProvider(req, res) {
+    try {
+        const { date, providerId } = req.query;
+
+        if (!date) {
+            return res.status(400).json({ message: 'Date is required' });
+        }
+
+        const availableSlots = await getAvailableSlotsForProviderService(providerId, new Date(date));
+
+        res.status(200).json(availableSlots);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}

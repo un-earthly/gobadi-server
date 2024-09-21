@@ -33,3 +33,18 @@ export const getRoom = async (req, res) => {
         res.status(500).json({ message: 'Error fetching room', error: error.message });
     }
 };
+
+export const initiateCall = async (req, res) => {
+    try {
+        const { roomId } = req.params;
+        const userId = req.user._id;
+        const room = await roomService.getRoom(roomId, userId);
+        if (!room) {
+            return res.status(404).json({ message: 'Room not found or access denied' });
+        }
+        // Here you would typically generate and return any necessary credentials or tokens for the call
+        res.json({ message: 'Call initiated', roomId });
+    } catch (error) {
+        res.status(500).json({ message: 'Error initiating call', error: error.message });
+    }
+};

@@ -3,10 +3,15 @@ import {
     createAppointment,
     getAppointments,
     getAppointmentById,
-    getAppointmentsForConsumer,
     updateAppointment,
     cancelAppointment,
-    getAppointmentCountsForProvider
+    getAppointmentCountsForProvider,
+    getAppointmentsCountsForConsumer,
+    getAppointmentsForConsumer,
+    getAppointmentsForProvider,
+    getAppointmentsByDateForProvider,
+    getAppointmentsByDateForConsumer,
+    getAvailableSlotsForProvider
 } from '../controllers/appointmentController.js';
 const router = express.Router();
 
@@ -18,5 +23,14 @@ router.put('/:id', updateAppointment);
 router.patch('/:id/cancel', cancelAppointment);
 
 router.get('/consumer/:consumerId', getAppointmentsForConsumer);
-router.get('/provider/:providerId', getAppointmentCountsForProvider);
+router.get('/provider/:providerId', getAppointmentsForProvider);
+
+router.get('/consumer/:consumerId/count', getAppointmentsCountsForConsumer);
+router.get('/provider/:providerId/count', getAppointmentCountsForProvider);
+
+router.get('/consumer/:consumerId/day', getAppointmentsByDateForProvider);
+router.get('/provider/:providerId/day', getAppointmentsByDateForConsumer);
+router.get('/provider/:providerId/available-slots/:date', getAvailableSlotsForProvider);
+
+
 export default router;

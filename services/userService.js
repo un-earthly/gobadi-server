@@ -1,4 +1,3 @@
-// services/userService.js
 import User from '../models/User.js';
 import Review from '../models/Review.js';
 
@@ -21,7 +20,7 @@ export const getUserRating = async (userId) => {
     const reviews = await Review.find({ providerId: userId });
     const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
     const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0;
-    return { rating: averageRating.toFixed(1), count: reviews.length };
+    return { rating: averageRating.toFixed(1) };
 };
 
 export const getServiceRequests = async (userId) => {
@@ -29,5 +28,5 @@ export const getServiceRequests = async (userId) => {
 };
 
 export const getServiceProviders = async () => {
-    return await User.find({ role: 'provider' }).select('-password -devPass');
+    return await User.find({ role: 'provider' }).select('-password');
 };

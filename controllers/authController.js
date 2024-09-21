@@ -1,4 +1,3 @@
-// controllers/authController.js
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 const generateToken = (id, role) => {
@@ -8,7 +7,7 @@ const generateToken = (id, role) => {
 };
 
 const registerUser = async (req, res) => {
-	const { mobile, role, veterinaries } = req.body;
+	const { mobile, role, veterinaries, name, password } = req.body;
 	let cow, fish, goat, hen, duck;
 
 	if (role === "consumer" && veterinaries) {
@@ -26,34 +25,13 @@ const registerUser = async (req, res) => {
 			return res.status(400).json({ message: 'User already exists' });
 		}
 
-		const password = Math.floor(100000 + Math.random() * 900000).toString();
 
-		const user = await User.create({
-			mobile,
-			password,
-			role,
-			cow,
-			fish,
-			goat,
-			hen,
-			duck,
-			devPass: password,
-		});
+		const user = await User.create({ ...req.body });
 
 		if (user) {
 			res.status(201).json({
-				_id: user._id,
-				mobile: user.mobile,
-				role: user.role,
-				veterinaries: {
-					cow: user.cow || null,
-					fish: user.fish || null,
-					goat: user.goat || null,
-					hen: user.hen || null,
-					duck: user.duck || null
-				},
+				user,
 				token: generateToken(user._id, user.role),
-				devPass: user.devPass
 			});
 		} else {
 			res.status(400).json({ message: 'Invalid user data' });
@@ -66,15 +44,14 @@ const registerUser = async (req, res) => {
 
 const authUser = async (req, res) => {
 	const { mobile, password } = req.body;
+	console.log(mobile, password);
 
 	try {
 		const user = await User.findOne({ mobile });
-
 		if (user && (await user.matchPassword(password))) {
+			console.log(user)
 			res.json({
-				_id: user._id,
-				mobile: user.mobile,
-				role: user.role,
+				user,
 				token: generateToken(user._id, user.role),
 			});
 		} else {
@@ -85,4 +62,32 @@ const authUser = async (req, res) => {
 	}
 };
 
+// Update password controller
+export const updatePassword = async (req, res) => {
+	const { userId, oldPassword, newPassword } = req.body;
+
+	try {
+		// Find the user by ID
+		const user = await User.findById(userId);
+
+		if (!user) {
+			return res.status(404).json({ message: 'User not found' });
+		}
+
+		// Check if the old password matches
+		const isMatch = await user.matchPassword(oldPassword);
+		if (!isMatch) {
+			return res.status(400).json({ message: 'Old password is incorrect' });
+		}
+
+		// Hash the new password and update the user
+		const salt = await bcrypt.genSalt(10);
+		user.password = await bcrypt.hash(newPassword, salt);
+		await user.save();
+
+		res.status(200).json({ message: 'Password updated successfully' });
+	} catch (error) {
+		res.status(500).json({ message: error.message });
+	}
+};
 export { registerUser, authUser };

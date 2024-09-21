@@ -16,7 +16,7 @@ export async function createAppointmentService(appointmentData) {
 export async function getAppointmentsService() {
     try {
         return await Appointment.find({
-            status: { $in: ['pending', 'scheduled'] } // Return only active appointments
+            status: { $in: ['pending', 'scheduled'] }
         })
             .populate('provider')
             .populate('consumer');
@@ -87,6 +87,20 @@ export async function countCompletedAppointmentsForProviderService(providerId) {
     }
 }
 
+// Get all appointments for a specific consumer
+export async function getAppointmentsForConsumerService(consumerId) {
+    return await Appointment.find({ consumer: consumerId })
+        .populate('provider', ["avatar", 'name'])
+        .populate('consumer', ["avatar", 'name']);
+}
+
+// Get all appointments for a specific provider
+export async function getAppointmentsForProviderService(providerId) {
+    return await Appointment.find({ provider: providerId })
+        .populate('provider', ["avatar", 'name'])
+        .populate('consumer', ["avatar", 'name'])
+}
+
 
 // Cancel an appointment (only if it's "pending" or "scheduled")
 export const cancelAppointmentService = async (appointmentId) => {
@@ -112,3 +126,83 @@ export const cancelAppointmentService = async (appointmentId) => {
         throw error; // Propagate error to the controller
     }
 };
+
+
+// Service to get appointments by date for consumers or providers
+export async function getAppointmentsByDateService(userId, role, date) {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0); // Start of the day (00:00:00)
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const query = {
+        appointmentSchedule: {
+            $gte: startOfDay,
+            $lte: endOfDay,
+        },
+    };
+
+    // If the role is 'consumer', search for appointments where the consumer matches userId
+    if (role === 'consumer') {
+        query.consumer = userId;
+    }
+    // If the role is 'provider', search for appointments where the provider matches userId
+    else if (role === 'provider') {
+        query.provider = userId;
+    }
+
+    return await Appointment.find(query);
+}
+
+
+
+export async function getAvailableSlotsForProviderService(providerId, date) {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0); // Start of the day (00:00:00)
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const appointments = await Appointment.find({
+        provider: providerId,
+        appointmentSchedule: {
+            $gte: startOfDay,
+            $lte: endOfDay,
+        },
+    });
+
+    const availableSlots = [];
+    const slotDuration = 60;
+    const openingHour = 9;
+    const closingHour = 17;
+
+    for (let hour = openingHour; hour < closingHour; hour++) {
+        const slotStart = new Date(date);
+        slotStart.setHours(hour, 0, 0, 0);
+
+        const slotEnd = new Date(slotStart);
+        slotEnd.setMinutes(slotEnd.getMinutes() + slotDuration);
+
+        // Check if this slot conflicts with any booked appointment
+        const isBooked = appointments.some(appointment => {
+            const appointmentStart = new Date(appointment.appointmentSchedule);
+            const appointmentEnd = new Date(appointmentStart);
+            appointmentEnd.setMinutes(appointmentEnd.getMinutes() + appointment.duration);
+
+            return (
+                (slotStart >= appointmentStart && slotStart < appointmentEnd) ||
+                (slotEnd > appointmentStart && slotEnd <= appointmentEnd)
+            );
+        });
+
+        if (!isBooked) {
+            availableSlots.push({
+                start: slotStart,
+                end: slotEnd,
+            });
+        }
+    }
+
+    return availableSlots;
+}
