@@ -28,8 +28,8 @@ router.get('/provider/:providerId', getAppointmentsForProvider);
 router.get('/consumer/:consumerId/count', getAppointmentsCountsForConsumer);
 router.get('/provider/:providerId/count', getAppointmentCountsForProvider);
 
-router.get('/consumer/:consumerId/day', getAppointmentsByDateForProvider);
-router.get('/provider/:providerId/day', getAppointmentsByDateForConsumer);
+router.get('/consumer/:consumerId/day', getAppointmentsByDateForConsumer);
+router.get('/provider/:providerId/day', getAppointmentsByDateForProvider);
 router.get('/provider/:providerId/available-slots/:date', getAvailableSlotsForProvider);
 
 

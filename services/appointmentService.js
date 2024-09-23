@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Appointment from '../models/Appointment.js';
 
 export async function createAppointmentService(appointmentData) {
@@ -90,15 +91,27 @@ export async function countCompletedAppointmentsForProviderService(providerId) {
 // Get all appointments for a specific consumer
 export async function getAppointmentsForConsumerService(consumerId) {
     return await Appointment.find({ consumer: consumerId })
-        .populate('provider', ["avatar", 'name'])
-        .populate('consumer', ["avatar", 'name']);
+        .populate({
+            path: 'consumer',
+            select: 'name age avatar district cow hen duck goat fish',
+        })
+        .populate({
+            path: 'provider',
+            select: 'name age avatar district designation organization experience',
+        });
 }
 
 // Get all appointments for a specific provider
 export async function getAppointmentsForProviderService(providerId) {
     return await Appointment.find({ provider: providerId })
-        .populate('provider', ["avatar", 'name'])
-        .populate('consumer', ["avatar", 'name'])
+        .populate({
+            path: 'consumer',
+            select: 'name age avatar district cow hen duck goat fish',
+        })
+        .populate({
+            path: 'provider',
+            select: 'name age avatar district designation organization experience',
+        });
 }
 
 
@@ -121,7 +134,7 @@ export const cancelAppointmentService = async (appointmentId) => {
         appointment.status = 'canceled';
         await appointment.save();
 
-        return appointment;  // Return updated appointment
+        return appointment;
     } catch (error) {
         throw error; // Propagate error to the controller
     }
@@ -131,28 +144,33 @@ export const cancelAppointmentService = async (appointmentId) => {
 // Service to get appointments by date for consumers or providers
 export async function getAppointmentsByDateService(userId, role, date) {
     const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0); // Start of the day (00:00:00)
+    // startOfDay.setHours(0, 0, 0, 0);
 
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
     const query = {
-        appointmentSchedule: {
+        "appointmentSchedule.date": {
             $gte: startOfDay,
             $lte: endOfDay,
         },
     };
 
-    // If the role is 'consumer', search for appointments where the consumer matches userId
     if (role === 'consumer') {
         query.consumer = userId;
-    }
-    // If the role is 'provider', search for appointments where the provider matches userId
-    else if (role === 'provider') {
+    } else if (role === 'provider') {
         query.provider = userId;
     }
 
-    return await Appointment.find(query);
+    return await Appointment.find(query)
+        .populate({
+            path: 'consumer',
+            select: 'name age avatar district cow hen duck goat fish',
+        })
+        .populate({
+            path: 'provider',
+            select: 'name age avatar district designation organization experience',
+        });
 }
 
 

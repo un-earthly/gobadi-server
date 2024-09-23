@@ -145,13 +145,12 @@ export async function getAppointmentsByDateForConsumer(req, res) {
         const consumerId = req.params.consumerId;
         let { date } = req.query;
 
-        // Default to today's date if no date is provided
         if (!date) {
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // Set time to 00:00:00
+            today.setHours(0, 0, 0, 0);
             date = today;
         } else {
-            date = new Date(date); // Convert the query string into a Date object
+            date = new Date(date);
         }
 
         const appointments = await getAppointmentsByDateService(consumerId, 'consumer', date);
@@ -176,6 +175,7 @@ export async function getAppointmentsByDateForProvider(req, res) {
             date = new Date(date); // Convert the query string into a Date object
         }
 
+        console.log(date)
         const appointments = await getAppointmentsByDateService(providerId, 'provider', date);
         res.status(200).json(appointments);
     } catch (error) {
