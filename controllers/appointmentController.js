@@ -14,14 +14,14 @@ import {
 } from '../services/appointmentService.js';
 
 // Create a new appointment
-export async function createAppointment(req, res) {
-    try {
-        const appointment = await createAppointmentService(req.body);
-        res.status(201).json(appointment);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-}
+// export async function createAppointment(req, res) {
+//     try {
+//         const appointment = await createAppointmentService(req.body);
+//         res.status(201).json(appointment);
+//     } catch (error) {
+//         res.status(400).json({ error: error.message });
+//     }
+// }
 
 // Get all appointments
 export async function getAppointments(req, res) {
@@ -198,5 +198,58 @@ export async function getAvailableSlotsForProvider(req, res) {
         res.status(200).json(availableSlots);
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+}
+
+
+// New controller function to check provider availability
+export async function checkAvailability(req, res) {
+    try {
+        const { providerId, date, startTime, endTime } = req.query;
+        const isAvailable = await checkProviderAvailability(providerId, date, startTime, endTime);
+        res.status(200).json({ isAvailable });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+// New controller function to get provider's schedule
+export async function getProviderDaySchedule(req, res) {
+    try {
+        const { providerId, date } = req.params;
+        const schedule = await getProviderSchedule(providerId, date);
+        res.status(200).json(schedule);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+// Modify createAppointment to handle potential scheduling conflicts
+export async function createAppointment(req, res) {
+    try {
+        const appointment = await createAppointmentService(req.body);
+        res.status(201).json(appointment);
+    } catch (error) {
+        if (error.message === 'The selected time slot is not available.') {
+            res.status(409).json({ error: error.message });
+        } else {
+            res.status(400).json({ error: error.message });
+        }
+    }
+}
+
+// New controller function to reschedule an appointment
+export async function rescheduleAppointment(req, res) {
+    try {
+        const { id } = req.params;
+        const { newSchedule } = req.body;
+        const updatedAppointment = await rescheduleAppointmentService(id, newSchedule);
+        res.status(200).json(updatedAppointment);
+    } catch (error) {
+        if (error.message === 'The selected time slot is not available for rescheduling.') {
+            res.status(409).json({ error: error.message });
+        } else {
+            res.status(400).json({ error: error.message });
+        }
     }
 }

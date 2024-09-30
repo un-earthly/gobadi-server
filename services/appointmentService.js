@@ -1,18 +1,6 @@
 import mongoose from 'mongoose';
 import Appointment from '../models/Appointment.js';
 
-export async function createAppointmentService(appointmentData) {
-    try {
-
-        const appointment = new Appointment(appointmentData);
-        const savedAppointment = await appointment.save();
-        return savedAppointment;
-    } catch (error) {
-        console.error('Error in createAppointmentService:', error);
-        throw error;
-    }
-}
-
 // Get all active appointments (excluding canceled or completed)
 export async function getAppointmentsService() {
     try {
@@ -66,7 +54,7 @@ export async function countCompletedAppointmentsForConsumerService(consumerId) {
     try {
         return await Appointment.countDocuments({
             consumer: consumerId,
-            status: 'completed' // Only count completed appointments
+            status: 'completed' 
         });
     } catch (error) {
         console.error('Error in countCompletedAppointmentsForConsumerService:', error);
@@ -136,7 +124,7 @@ export const cancelAppointmentService = async (appointmentId) => {
 
         return appointment;
     } catch (error) {
-        throw error; // Propagate error to the controller
+        throw error;
     }
 };
 
@@ -223,4 +211,72 @@ export async function getAvailableSlotsForProviderService(providerId, date) {
     }
 
     return availableSlots;
+}
+
+
+// New function to check provider availability
+export async function checkProviderAvailability(providerId, date, startTime, endTime) {
+    const startDateTime = new Date(`${date}T${startTime}`);
+    const endDateTime = new Date(`${date}T${endTime}`);
+
+    const conflictingAppointments = await Appointment.find({
+        provider: providerId,
+        'appointmentSchedule.date': date,
+        $or: [
+            {
+                'appointmentSchedule.startTime': { $lt: endDateTime },
+                'appointmentSchedule.endTime': { $gt: startDateTime }
+            },
+            {
+                'appointmentSchedule.startTime': { $gte: startDateTime, $lt: endDateTime }
+            },
+            {
+                'appointmentSchedule.endTime': { $gt: startDateTime, $lte: endDateTime }
+            }
+        ]
+    });
+
+    return conflictingAppointments.length === 0;
+}
+
+// New function to get provider's schedule for a specific day
+export async function getProviderSchedule(providerId, date) {
+    return await Appointment.find({
+        provider: providerId,
+        'appointmentSchedule.date': date
+    }).sort({ 'appointmentSchedule.startTime': 1 });
+}
+
+// Modify createAppointmentService to include availability check
+export async function createAppointmentService(appointmentData) {
+    const { provider, appointmentSchedule } = appointmentData;
+    const { date, startTime, endTime } = appointmentSchedule;
+
+    const isAvailable = await checkProviderAvailability(provider, date, startTime, endTime);
+
+    if (!isAvailable) {
+        throw new Error('The selected time slot is not available.');
+    }
+
+    const appointment = new Appointment(appointmentData);
+    return await appointment.save();
+}
+
+// New function to reschedule an appointment
+export async function rescheduleAppointmentService(appointmentId, newSchedule) {
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+        throw new Error('Appointment not found');
+    }
+
+    const { date, startTime, endTime } = newSchedule;
+    const isAvailable = await checkProviderAvailability(appointment.provider, date, startTime, endTime);
+
+    if (!isAvailable) {
+        throw new Error('The selected time slot is not available for rescheduling.');
+    }
+
+    appointment.appointmentSchedule = newSchedule;
+    return await appointment.save();
 }

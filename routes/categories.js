@@ -1,60 +1,179 @@
-// routes/fishCategories.js
-const express = require('express');
+import express from 'express';
+import Category from '../models/Category.js';  // Adjust the path as needed
+import { isAdmin, protect } from '../middleware/authMiddleware.js';  // You'll need to implement these
+
 const router = express.Router();
-const FishCategory = require('../models/category');
 
-// Create a new fish category
-router.post('/', async (req, res) => {
+// @desc    Get all categories
+// @route   GET /api/admin/categories
+// @access  Private/Admin
+router.get('/categories', protect, isAdmin, async (req, res, next) => {
     try {
-        const category = new FishCategory(req.body);
-        await category.save();
-        res.status(201).json(category);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-});
-
-// Get all fish categories
-router.get('/', async (req, res) => {
-    try {
-        const categories = await FishCategory.find();
+        const categories = await Category.find({});
         res.json(categories);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 });
 
-// Get a fish category by ID
-router.get('/:id', async (req, res) => {
+// @desc    Get category by ID
+// @route   GET /api/admin/categories/:id
+// @access  Private/Admin
+router.get('/categories/:id', protect, isAdmin, async (req, res, next) => {
     try {
-        const category = await FishCategory.findOne({ id: req.params.id });
-        if (!category) return res.status(404).json({ message: 'Category not found' });
-        res.json(category);
+        const category = await Category.findOne({ id: req.params.id });
+        if (category) {
+            res.json(category);
+        } else {
+            res.status(404);
+            throw new Error('Category not found');
+        }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 });
 
-// Update a fish category by ID
-router.put('/:id', async (req, res) => {
+// @desc    Create a new category
+// @route   POST /api/admin/categories
+// @access  Private/Admin
+router.post('/categories', protect, isAdmin, async (req, res, next) => {
     try {
-        const category = await FishCategory.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
-        if (!category) return res.status(404).json({ message: 'Category not found' });
-        res.json(category);
+        const { id, icon, title, subCategories } = req.body;
+
+        const categoryExists = await Category.findOne({ id });
+
+        if (categoryExists) {
+            res.status(400);
+            throw new Error('Category with this ID already exists');
+        }
+
+        const category = await Category.create({
+            id, icon, title, subCategories
+        });
+
+        if (category) {
+            res.status(201).json(category);
+        } else {
+            res.status(400);
+            throw new Error('Invalid category data');
+        }
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        next(error);
     }
 });
 
-// Delete a fish category by ID
-router.delete('/:id', async (req, res) => {
+// @desc    Update category
+// @route   PUT /api/admin/categories/:id
+// @access  Private/Admin
+router.put('/categories/:id', protect, isAdmin, async (req, res, next) => {
     try {
-        const category = await FishCategory.findOneAndDelete({ id: req.params.id });
-        if (!category) return res.status(404).json({ message: 'Category not found' });
-        res.json({ message: 'Category deleted' });
+        const category = await Category.findOne({ id: req.params.id });
+
+        if (category) {
+            category.icon = req.body.icon || category.icon;
+            category.title = req.body.title || category.title;
+
+            if (req.body.subCategories) {
+                category.subCategories = req.body.subCategories;
+            }
+
+            const updatedCategory = await category.save();
+            res.json(updatedCategory);
+        } else {
+            res.status(404);
+            throw new Error('Category not found');
+        }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 });
 
-module.exports = router;
+// @desc    Delete category
+// @route   DELETE /api/admin/categories/:id
+// @access  Private/Admin
+router.delete('/categories/:id', protect, isAdmin, async (req, res, next) => {
+    try {
+        const category = await Category.findOne({ id: req.params.id });
+
+        if (category) {
+            await category.remove();
+            res.json({ message: 'Category removed' });
+        } else {
+            res.status(404);
+            throw new Error('Category not found');
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
+// @desc    Add subcategory to a category
+// @route   POST /api/admin/categories/:id/subcategories
+// @access  Private/Admin
+router.post('/categories/:id/subcategories', protect, isAdmin, async (req, res, next) => {
+    try {
+        const category = await Category.findOne({ id: req.params.id });
+
+        if (category) {
+            const { id, title } = req.body;
+            category.subCategories.push({ id, title });
+            const updatedCategory = await category.save();
+            res.json(updatedCategory);
+        } else {
+            res.status(404);
+            throw new Error('Category not found');
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
+// @desc    Update subcategory
+// @route   PUT /api/admin/categories/:categoryId/subcategories/:subcategoryId
+// @access  Private/Admin
+router.put('/categories/:categoryId/subcategories/:subcategoryId', protect, isAdmin, async (req, res, next) => {
+    try {
+        const category = await Category.findOne({ id: req.params.categoryId });
+
+        if (category) {
+            const subcategory = category.subCategories.id(req.params.subcategoryId);
+            if (subcategory) {
+                subcategory.title = req.body.title || subcategory.title;
+                const updatedCategory = await category.save();
+                res.json(updatedCategory);
+            } else {
+                res.status(404);
+                throw new Error('Subcategory not found');
+            }
+        } else {
+            res.status(404);
+            throw new Error('Category not found');
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
+// @desc    Delete subcategory
+// @route   DELETE /api/admin/categories/:categoryId/subcategories/:subcategoryId
+// @access  Private/Admin
+router.delete('/categories/:categoryId/subcategories/:subcategoryId', protect, isAdmin, async (req, res, next) => {
+    try {
+        const category = await Category.findOne({ id: req.params.categoryId });
+
+        if (category) {
+            category.subCategories = category.subCategories.filter(
+                sub => sub.id !== req.params.subcategoryId
+            );
+            const updatedCategory = await category.save();
+            res.json(updatedCategory);
+        } else {
+            res.status(404);
+            throw new Error('Category not found');
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
+export default router;
