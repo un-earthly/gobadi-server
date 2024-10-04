@@ -10,7 +10,7 @@ import {
 } from "../controllers/userController.js"
 const router = express.Router();
 import User from '../models/User.js';  // Adjust the path as needed
-import { isAdmin, protect } from '../middleware/authMiddleware.js';  
+import { isAdmin, protect } from '../middleware/authMiddleware.js';
 
 // Public routes
 router.get("/service-providers", getUserServiceProviders);
@@ -155,6 +155,24 @@ router.delete('/users/:id', protect, isAdmin, async (req, res, next) => {
         }
     } catch (error) {
         next(error);
+    }
+});
+// Toggle online status
+router.patch('/toggle-online-status', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Toggle the isOnline status
+        user.isOnline = !user.isOnline;
+        await user.save();
+
+        res.json({ isOnline: user.isOnline });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 

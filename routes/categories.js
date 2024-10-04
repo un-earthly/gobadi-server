@@ -7,7 +7,7 @@ const router = express.Router();
 // @desc    Get all categories
 // @route   GET /api/admin/categories
 // @access  Private/Admin
-router.get('/categories', protect, isAdmin, async (req, res, next) => {
+router.get('/', async (req, res, next) => {
     try {
         const categories = await Category.find({});
         res.json(categories);
@@ -19,7 +19,7 @@ router.get('/categories', protect, isAdmin, async (req, res, next) => {
 // @desc    Get category by ID
 // @route   GET /api/admin/categories/:id
 // @access  Private/Admin
-router.get('/categories/:id', protect, isAdmin, async (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
     try {
         const category = await Category.findOne({ id: req.params.id });
         if (category) {
@@ -36,7 +36,7 @@ router.get('/categories/:id', protect, isAdmin, async (req, res, next) => {
 // @desc    Create a new category
 // @route   POST /api/admin/categories
 // @access  Private/Admin
-router.post('/categories', protect, isAdmin, async (req, res, next) => {
+router.post('/', async (req, res, next) => {
     try {
         const { id, icon, title, subCategories } = req.body;
 
@@ -61,11 +61,11 @@ router.post('/categories', protect, isAdmin, async (req, res, next) => {
         next(error);
     }
 });
-
+// 
 // @desc    Update category
 // @route   PUT /api/admin/categories/:id
 // @access  Private/Admin
-router.put('/categories/:id', protect, isAdmin, async (req, res, next) => {
+router.put('/:id', async (req, res, next) => {
     try {
         const category = await Category.findOne({ id: req.params.id });
 
@@ -87,16 +87,16 @@ router.put('/categories/:id', protect, isAdmin, async (req, res, next) => {
         next(error);
     }
 });
-
+// protect, isAdmin,
 // @desc    Delete category
 // @route   DELETE /api/admin/categories/:id
 // @access  Private/Admin
-router.delete('/categories/:id', protect, isAdmin, async (req, res, next) => {
+router.delete('/:id', async (req, res, next) => {
     try {
-        const category = await Category.findOne({ id: req.params.id });
+        console.log('Deleting category, id: ' + req.params.id);
+        const category = await Category.deleteOne({ _id: req.params.id });
 
         if (category) {
-            await category.remove();
             res.json({ message: 'Category removed' });
         } else {
             res.status(404);
@@ -110,9 +110,9 @@ router.delete('/categories/:id', protect, isAdmin, async (req, res, next) => {
 // @desc    Add subcategory to a category
 // @route   POST /api/admin/categories/:id/subcategories
 // @access  Private/Admin
-router.post('/categories/:id/subcategories', protect, isAdmin, async (req, res, next) => {
+router.post('/:id/subcategories', async (req, res, next) => {
     try {
-        const category = await Category.findOne({ id: req.params.id });
+        const category = await Category.findOne({ _id: req.params.id });
 
         if (category) {
             const { id, title } = req.body;
@@ -131,9 +131,9 @@ router.post('/categories/:id/subcategories', protect, isAdmin, async (req, res, 
 // @desc    Update subcategory
 // @route   PUT /api/admin/categories/:categoryId/subcategories/:subcategoryId
 // @access  Private/Admin
-router.put('/categories/:categoryId/subcategories/:subcategoryId', protect, isAdmin, async (req, res, next) => {
+router.put('/:categoryId/subcategories/:subcategoryId', async (req, res, next) => {
     try {
-        const category = await Category.findOne({ id: req.params.categoryId });
+        const category = await Category.findOne({ _id: req.params.categoryId });
 
         if (category) {
             const subcategory = category.subCategories.id(req.params.subcategoryId);
@@ -157,7 +157,7 @@ router.put('/categories/:categoryId/subcategories/:subcategoryId', protect, isAd
 // @desc    Delete subcategory
 // @route   DELETE /api/admin/categories/:categoryId/subcategories/:subcategoryId
 // @access  Private/Admin
-router.delete('/categories/:categoryId/subcategories/:subcategoryId', protect, isAdmin, async (req, res, next) => {
+router.delete('/:categoryId/subcategories/:subcategoryId', async (req, res, next) => {
     try {
         const category = await Category.findOne({ id: req.params.categoryId });
 
