@@ -21,9 +21,9 @@ router.get('/:id/rating', getUserRating);
 router.get('/:id/service-requests', getServiceRequests);
 
 // @desc    Get all users
-// @route   GET /api/admin/users
+// @route   GET /api/admin
 // @access  Private/Admin
-router.get('/users', protect, isAdmin, async (req, res, next) => {
+router.get('/', async (req, res, next) => {
     try {
         const users = await User.find({}).select('-password');
         res.json(users);
@@ -33,9 +33,9 @@ router.get('/users', protect, isAdmin, async (req, res, next) => {
 });
 
 // @desc    Get user by ID
-// @route   GET /api/admin/users/:id
+// @route   GET /api/admin/:id
 // @access  Private/Admin
-router.get('/users/:id', protect, isAdmin, async (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
     try {
         const user = await User.findById(req.params.id).select('-password');
         if (user) {
@@ -50,9 +50,9 @@ router.get('/users/:id', protect, isAdmin, async (req, res, next) => {
 });
 
 // @desc    Create a new user
-// @route   POST /api/admin/users
+// @route   POST /api/admin
 // @access  Private/Admin
-router.post('/users', protect, isAdmin, async (req, res, next) => {
+router.post('/', async (req, res, next) => {
     try {
         const {
             mobile, password, role, name, age, district, avatar, nid,
@@ -90,9 +90,9 @@ router.post('/users', protect, isAdmin, async (req, res, next) => {
 });
 
 // @desc    Update user
-// @route   PUT /api/admin/users/:id
+// @route   PUT /api/admin/:id
 // @access  Private/Admin
-router.put('/users/:id', protect, isAdmin, async (req, res, next) => {
+router.put('/:id', async (req, res, next) => {
     try {
         const user = await User.findById(req.params.id);
 
@@ -139,10 +139,37 @@ router.put('/users/:id', protect, isAdmin, async (req, res, next) => {
     }
 });
 
-// @desc    Delete user
-// @route   DELETE /api/admin/users/:id
+
+// @desc    Toggle user block status
+// @route   PATCH /api/admin/users/:id/toggle-block
 // @access  Private/Admin
-router.delete('/users/:id', protect, isAdmin, async (req, res, next) => {
+router.patch('/:id/toggle-block', async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (user) {
+            user.isBlocked = !user.isBlocked;
+            const updatedUser = await user.save();
+
+            res.json({
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                isBlocked: updatedUser.isBlocked
+            });
+        } else {
+            res.status(404);
+            throw new Error('User not found');
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
+
+// @desc    Delete user
+// @route   DELETE /api/admin/:id
+// @access  Private/Admin
+router.delete('/:id', async (req, res, next) => {
     try {
         const user = await User.findById(req.params.id);
 
@@ -157,6 +184,8 @@ router.delete('/users/:id', protect, isAdmin, async (req, res, next) => {
         next(error);
     }
 });
+
+
 // Toggle online status
 router.patch('/toggle-online-status', protect, async (req, res) => {
     try {
@@ -176,5 +205,105 @@ router.patch('/toggle-online-status', protect, async (req, res) => {
     }
 });
 
+// @desc    Get all users with pagination and search
+// @route   GET /api/admin
+// @access  Private/Admin
+router.get('/', async (req, res, next) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || '';
+
+        const searchQuery = {
+            $or: [
+                { name: { $regex: search, $options: 'i' } },
+                { mobile: { $regex: search, $options: 'i' } },
+                { district: { $regex: search, $options: 'i' } }
+            ]
+        };
+
+        const totalUsers = await User.countDocuments(searchQuery);
+        const users = await User.find(searchQuery)
+            .select('-password')
+            .limit(limit)
+            .skip((page - 1) * limit);
+
+        res.json({
+            users,
+            totalUsers,
+            totalPages: Math.ceil(totalUsers / limit),
+            currentPage: page
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// @desc    Get user by ID
+// @route   GET /api/admin/:id
+// @access  Private/Admin
+router.get('/:id', async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password');
+        if (user) {
+            res.json(user);
+        } else {
+            res.status(404);
+            throw new Error('User not found');
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
+// @desc    Update user
+// @route   PUT /api/admin/:id
+// @access  Private/Admin
+router.put('/:id', async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (user) {
+            Object.assign(user, req.body);
+
+            if (req.body.password) {
+                user.password = req.body.password;
+            }
+
+            const updatedUser = await user.save();
+
+            res.json({
+                _id: updatedUser._id,
+                mobile: updatedUser.mobile,
+                role: updatedUser.role,
+                name: updatedUser.name
+            });
+        } else {
+            res.status(404);
+            throw new Error('User not found');
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
+// @desc    Delete user
+// @route   DELETE /api/admin/:id
+// @access  Private/Admin
+router.delete('/:id', async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (user) {
+            await user.remove();
+            res.json({ message: 'User removed' });
+        } else {
+            res.status(404);
+            throw new Error('User not found');
+        }
+    } catch (error) {
+        next(error);
+    }
+});
 
 export default router;
